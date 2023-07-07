@@ -25,8 +25,10 @@ const SearchBooks = () => {
 
   // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
   useEffect(() => {
+    console.log('Updated saved book IDs:', savedBookIds);
+  
     return () => saveBookIds(savedBookIds);
-  });
+  }, [savedBookIds]); // adding savedBookIds to the dependency array
 
   // create method to search for books and set state on form submit
   const handleFormSubmit = async (event) => {
@@ -51,6 +53,7 @@ const SearchBooks = () => {
         title: book.volumeInfo.title,
         description: book.volumeInfo.description,
         image: book.volumeInfo.imageLinks?.thumbnail || '',
+        link: book.volumeInfo.previewLink || '',
       }));
 
       setSearchedBooks(bookData);
@@ -60,32 +63,41 @@ const SearchBooks = () => {
     }
   };
 
-  // set up mutation
-  const [saveBook, { error }] = useMutation(SAVE_BOOK);
+// set up mutation
+const [saveBook, { error }] = useMutation(SAVE_BOOK);
 
-  // create function to handle saving a book to our database
-  const handleSaveBook = async (bookId) => {
-    // find the book in `searchedBooks` state by the matching id
-    const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
+const handleSaveBook = async (bookId) => {
+  // find the book in `searchedBooks` state by the matching id
+  const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
 
-    // get token
-    const token = Auth.loggedIn() ? Auth.getToken() : null;
+  // get token
+  const token = Auth.loggedIn() ? Auth.getToken() : null;
 
-    if (!token) {
-      return false;
-    }
+  if (!token) {
+    return false;
+  }
 
-    try {
-      const { data } = await saveBook({
-        variables: { input: bookToSave },
-      });
+  console.log('Current saved book IDs:', savedBookIds);
 
-      // if book successfully saves to user's account, save book id to state
-      setSavedBookIds([...savedBookIds, bookToSave.bookId]);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  try {
+    const { data } = await saveBook({
+      variables: { bookData: bookToSave },
+    });
+
+    setSavedBookIds((prevSavedBookIds) => {
+      if (!prevSavedBookIds.includes(bookToSave.bookId)) {
+        return [...prevSavedBookIds, bookToSave.bookId];
+      } else {
+        console.log('Book ID already exists in the array');
+        return prevSavedBookIds;  // Return previous state if book already exists
+      }
+    });
+  } catch (err) {
+    console.error('Error while saving book:', err);
+  }
+
+  console.log('Saved book IDs after save:', savedBookIds);
+};
 
   return (
     <>
