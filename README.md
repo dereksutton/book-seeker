@@ -1,6 +1,8 @@
 # Book Seeker
 Book Seeker is a full-stack MERN (MongoDB, Express, React, Node.js) application for book lovers who want to search for books and save them for future reference. The application uses Google Books API to perform seaerches, and Apollo Server and Client to manage data with GraphQL.
 
+To view the application, here's the [Deployed URL](https://shrouded-thicket-87208-a9a7cf4cd051.herokuapp.com/).
+
 ## Table of Contents
 [Features](#features)
 [Installation](#installation)
